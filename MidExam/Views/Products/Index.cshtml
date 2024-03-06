@@ -1,0 +1,172 @@
+﻿@model IEnumerable<MidExam.ViewModels.ProductVM>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery A
+
+@functions
+{
+    public string? GetAntiXsrfRequestToken()
+    {
+        return A.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+@{
+    
+    ViewData["Title"] = "Index";
+}
+
+<div>
+    <h6>Add new Product</h6>
+    <hr />
+    <input  type="hidden" id="hiddenProductIdInput" value="0" />
+    <span class="visually-hidden" id="actionTypeNameForProduct">add</span> 
+    <input type="hidden" id="productImageUrl" value="">
+</div>
+
+<div>
+    <img id="selectedProductImage" src="images/TT.png" width="90" height="90"> @* //alt="..." *@
+
+    <div>
+        <div>
+            <span>Product</span>
+            <input id="productNameInput" type="text"/>
+        </div>
+        <input type="file" id="inputProductImage" onchange="uploadProductImage(this)">
+        <button type="button" id="addProductButton" onclick="addProduct('@GetAntiXsrfRequestToken()')">AddProduct</button>
+        <a asp-action="Index" asp-controller="Products">RESET</a>
+    </div>
+</div>
+
+<div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Photo</th>
+                <th> </th>
+            </tr>
+        </thead>
+        <tbody id="productTableBody">
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @item.Name
+                    </td>
+                    <td>
+                        <img src="@item.ImageUrl" width="90" height="90"/>
+                    </td>
+                    <td>
+                        <button type="button" data-id="@item.Id" data-image="@item.ImageUrl" data-name="@item.Name" onclick="editProduct(this)">Edit</button>
+                        <button type="button" onclick="deleteProduct('@GetAntiXsrfRequestToken()', @item.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+
+    function uploadProductImage(e) 
+    {
+        var file = $(e)[0].files[0];
+
+
+        if (file) 
+        {
+            const formData = new FormData();
+            formData.append("image", file);
+            $.ajax({
+                method: "POST",
+                url: "/Products/GetImageUrl",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (result) 
+                {
+                    $("#productImageUrl").val(result);
+                    var reader = new FileReader();
+                    reader.onload = function () 
+                    {
+
+                        $("#selectedProductImage").attr("src", reader.result);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+        }
+    }
+
+    function addProduct(token) 
+    {
+        class product {
+            constructor(id, name, imageUrl) 
+            {
+                this.Id = id;
+                this.Name = name;
+                this.ImageUrl = imageUrl;
+            }
+        }
+
+        let aProduct = new product($("#hiddenProductIdInput").val(), $("#productNameInput").val(), $("#productImageUrl").val());
+
+        $.ajax({
+            method: "POST",
+            url: "/Products/AddUpdate",
+            headers: { "RequestVerificationToken": token },
+            data:
+            {
+                productVM: aProduct,
+                actionType: $("#actionTypeNameForProduct").text(),
+                token: token
+            },
+            success: function (result) 
+            {
+                $("#productTableBody").html(result);
+                $("#actionTypeNameForProduct").text("add");
+                $("#addProductButton").text("Add");
+                $("#productNameInput").val('');
+                $("#inputProductImage").val('');
+                $("#selectedProductImage").attr("src", "images/TT.png");
+            },
+            error: function (req, status, error) 
+            {
+                console.log(error);
+            }
+        })
+    }
+
+    function editProduct(e) 
+    {
+        $("#productNameInput").val($(e).data("name"));
+        $("#hiddenProductIdInput").val($(e).data("id"));
+        $("#productImageUrl").val($(e).data("image"));
+        $("#actionTypeNameForProduct").text("edit");
+        $("#addProductButton").text("Update");
+        $("#selectedProductImage").attr("src", $(e).data("image"));
+    }
+
+    function deleteProduct(token, e) 
+    {
+        $.ajax({
+            method: "DELETE",
+            url: "/Products/Delete",
+            headers: { "RequestVerificationToken": token },
+            data: {
+                id: e,
+                token: token
+            },
+            success: function (result) {
+                $("#productTableBody").html(result);
+                $("#actionTypeNameForProduct").text("add");
+                $("#addProductButton").text("Add");
+            },
+
+            error: function (req, status, error) 
+            {
+                console.log(error);
+            }
+        })
+    };
+
+</script>

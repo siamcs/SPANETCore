@@ -1,0 +1,119 @@
+﻿@model IEnumerable<MidExam.ViewModels.MeasurementUnitVM>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery A
+
+
+@functions
+{
+    public string? GetAntiXsrfRequestToken()
+    {
+        return A.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+@{
+    var token = GetAntiXsrfRequestToken();
+    ViewData["Title"] = "Index";
+}
+
+<div>
+    <di>
+        <h6>Add Measurement</h6>
+        <hr />
+        <input type="hidden" id="hiddenIdInput" value="0" />
+
+        <div>
+            <input  type="text" id="measurementUnitInput"/>
+            <button type="button" id="addMUButton" onclick="addMeasurementUnit('@GetAntiXsrfRequestToken()')">AddUnit</button>
+            <a asp-action="Index" asp-controller="MeasurementUnits">RESET</a>
+        </div>
+        <span class="visually-hidden" id="actionTypeName">add</span>
+</div>
+<div>
+    <table>
+        <thead>
+            <tr>
+                <th>Measurement</th>
+            </tr>
+        </thead>
+        <tbody id="mutableBody">
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td> @item.Name</td>
+                    <td>
+                        <button type="button" data-id="@item.Id" data-name="@item.Name" onclick="editMeasurementUnit(this)">Edit</button>
+                        <button type="button" onclick="deleteMeasurementUnit('@GetAntiXsrfRequestToken()', @item.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function addMeasurementUnit(token) 
+    {
+        class measurementUnit 
+        {
+            constructor(id, name) 
+            {
+                this.Id = id;
+                this.Name = name;
+            }
+        }
+
+        let amuvm = new measurementUnit($("#hiddenIdInput").val(), $("#measurementUnitInput").val());
+
+        $.ajax({
+            method: "POST",
+            url: "/MeasurementUnits/AddUpdate",
+            headers: { "RequestVerificationToken": token },
+            data:
+            {
+                aMeasurementUnitVM: amuvm,
+                actionType: $("#actionTypeName").text(),
+                token: token
+            },
+
+            success: function (result) 
+            {
+                $("#mutableBody").html(result);
+                $("#actionTypeName").text("add");
+                $("#addMUButton").text("Add");
+            },
+            error: function (req, status, error) {
+                console.log(error);
+            }
+        })
+    }
+
+    function editMeasurementUnit(e) 
+    {
+        $("#measurementUnitInput").val($(e).data("name"));
+        $("#hiddenIdInput").val($(e).data("id"));
+        $("#actionTypeName").text("edit");
+        $("#addMUButton").text("Update");
+    };
+
+    function deleteMeasurementUnit(token, e) 
+    {
+        $.ajax({
+            method: "DELETE",
+            url: "/MeasurementUnits/Delete",
+            headers: { "RequestVerificationToken": token },
+            data: {
+                id: e,
+                token: token
+            },
+            success: function (result) {
+                $("#mutableBody").html(result);
+                $("#actionTypeName").text("add");
+                $("#addMUButton").text("Add");
+            },
+            error: function (req, status, error) {
+                console.log(error);
+            }
+        })
+    };
+
+</script>

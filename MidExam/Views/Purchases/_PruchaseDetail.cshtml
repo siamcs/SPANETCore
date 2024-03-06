@@ -1,0 +1,27 @@
+﻿@model MidExam.ViewModels.PurchaseDetailVM
+
+<tr>
+    <td>
+        <input value="@Model.Id" type="hidden" data-tag="Id" />
+        <input value="@Model.ProductId" type="hidden" data-tag="ProductId" />
+        <input value="@Model.MeasurementUnitId" type="hidden" data-tag="MeasurementUnitId" />
+        <input value="@Model.PurchaseHeaderId" type="hidden" data-tag="PurchaseHeaderId" />
+        <input value="@Model.ProductName" type="text"  data-tag="ProductName" readonly />
+    </td>
+    <td>
+        <input value="@Model.Quantity" type="text"  data-tag="Quantity" readonly />
+    </td>
+    <td>
+        <input value="@Model.MeasurementUnitName" type="text"  data-tag="MeasurementUnitName" readonly />
+    </td>
+    <td>
+        <input value="@Model.UnitPrice" type="text"  data-tag="UnitPrice" readonly />
+    </td>
+    <td>
+        <input value="@Model.TotalPrice" type="text"  data-tag="TotalPrice" readonly />
+    </td>
+    <td>
+        <button type="button"  onclick="removeMe($(this))">Remove</button>
+        <a asp-action="Index" asp-controller="Purchases">RESET</a>
+    </td>
+</tr>

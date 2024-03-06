@@ -1,0 +1,40 @@
+﻿@model MidExam.ViewModels.PurchaseHeaderVM
+
+<div >
+    <div>
+        <h6>@Model.PurchaseDate.ToString("dd/MM/yyyy")</h6>
+        <h5>@Model.CustomerName</h5>
+        <h6>@Model.CustomerPhoneNumber</h6>
+        <h6>@Model.CustomerEmailAddress</h6>
+        <h6>@Model.InvoiceNumber</h6>
+        <p>
+            <span class="visually-hidden" id="@Model.Id">@Model.Id</span>
+            <table >
+                <tbody>
+                    @foreach (var pdvm in Model.PurchaseDetails)
+                    {
+                        <tr>
+                            <td>
+                                <span class="visually-hidden" id="@pdvm.Id">@pdvm.Id</span>
+                                <span class="visually-hidden" id="@pdvm.ProductId">@pdvm.ProductId</span>
+                                <span class="visually-hidden" id="@pdvm.MeasurementUnitId">@pdvm.MeasurementUnitId</span>
+                                @pdvm.ProductName
+                            </td>
+                            <td>
+                                @pdvm.Quantity&nbsp;@pdvm.MeasurementUnitName
+                            </td>
+                            <td>
+                                @pdvm.UnitPrice
+                            </td>
+                            <td>
+                                @pdvm.TotalPrice
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </p>
+        <hr />
+        <h6>Total Amount:&nbsp;@Model.TotalAmount</h6>
+    </div>
+</div>

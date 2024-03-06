@@ -1,0 +1,147 @@
+﻿@model IEnumerable<MidExam.ViewModels.PurchaseHeaderVM>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery A
+
+@functions
+{
+    public string? GetAntiXsrfRequestToken()
+    {
+        return A.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+@{
+   
+    ViewData["Title"] = "Index";
+}
+
+
+<div>
+    <div>
+        <h4>Customer Information</h4>
+        <hr />
+        <div>
+            <div>
+                <div>
+                    <input id="customerNameInput" type="text" placeholder="Name">
+                </div>
+                <div>
+                    <input id="customerEmailInput" type="email" placeholder="gmail">
+                </div>
+                <div>
+                    <input id="customerPhoneInput" type="tel" placeholder="Number">
+                </div>
+                <div>
+                    <input id="purchaseDateInput" type="date" title="TodayDate">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h4>Select Product</h4>
+        <hr />
+        <div>
+            <div>
+                <select id="productSelect" asp-items="ViewBag.ProductOptions">
+                    <option disabled selected>Choose a product</option>
+                </select>
+            </div>
+            <div>
+                <input id="quantityInput" type="number" placeholder="Quantity" onchange="calculateTotalPrice()" />
+            </div>
+            <div>
+                <select id="measurementUnitSelect" asp-items="ViewBag.MeasurementUnitOptions">
+                    <option disabled selected>Choose a unit</option>
+                </select>
+            </div>
+            <div>
+                <input id="unitPriceInput" type="number" placeholder="Unit price" onchange="calculateTotalPrice()" />
+            </div>
+            <div>
+                <span id="totalPriceSpan" type="text">0.00</span>
+            </div>
+            <div>
+                <button type="button" onclick="getPurchaseDetailPartialView('@GetAntiXsrfRequestToken()')">Add</button>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h>Selected Product</h>
+        <hr />
+        <table>
+            <thead>
+                <tr>
+                    <th>
+                        Product
+                    </th>
+                    <th>
+                        Quantity
+                    </th>
+                    <th>
+                        Unit
+                    </th>
+                    <th>
+                        Unit Price
+                    </th>
+                    <th>
+                        Total Price
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="pdvm_tbody"></tbody>
+        </table>
+        <hr />
+        <div>
+            <span id="totalAmountAddon">Total Amount: </span>
+            <input id="totalAmount" type="text" placeholder="0.00" aria-label="TotalAmount" aria-describedby="totalAmountAddon" readonly>
+        </div>
+    </div>
+    <div>
+        <div>
+            <button id="purchaseOrderSubmitButton" type="button" onclick="submitPurchaseOrder('@GetAntiXsrfRequestToken()')">Purchase</button>
+            <button id="purchaseOrderSPSubmitButton" type="button" onclick="submitPurchaseOrderForSP('@GetAntiXsrfRequestToken()')">Purchase through SP</button>
+        </div>
+    </div>
+</div>
+
+<div>
+    <div id="purchaseCardsDiv">
+        @foreach (var item in Model)
+        {
+            <div>
+                <div>
+                    <h6>@item.PurchaseDate.ToString("dd/MM/yyyy")</h6>
+                    <h5>@item.CustomerName</h5>
+                    <h6>@item.CustomerPhoneNumber</h6>
+                    <h6>@item.CustomerEmailAddress</h6>
+                    <h6>@item.InvoiceNumber</h6>
+
+                    <p>
+                        <table>
+                            <tbody>
+                                @foreach (var pdvm in item.PurchaseDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            @pdvm.ProductName
+                                        </td>
+                                        <td>
+                                            @pdvm.Quantity&nbsp;@pdvm.MeasurementUnitName
+                                        </td>
+                                        <td>
+                                            @pdvm.UnitPrice
+                                        </td>
+                                        <td>
+                                            @pdvm.TotalPrice
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <h6>Total:&nbsp;@item.TotalAmount</h6>
+                    </p>
+
+                </div>
+            </div>
+        }
+    </div>
